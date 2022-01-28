@@ -1,0 +1,11 @@
+#ifndef PLATFORM_A380_H
+#define PLATFORM_A380_H
+
+#define FREE_MEM_BASE			CONFIG_STACK_ADDR
+//#define FREE_MEM_BASE			0x41000000
+#define DEFAULT_CONSOLE                 UART_FTUART010_PA_BASE  
+//#define DEFAULT_CONSOLE_BAUD            BAUD_115200
+#define DEFAULT_CONSOLE_BAUD            BAUD_38400
+#define UART_CLOCK   			18432000
+
+#endif

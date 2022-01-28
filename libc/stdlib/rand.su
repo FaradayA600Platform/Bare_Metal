@@ -1,0 +1,2 @@
+stdlib.h:310:13:srand	8	static
+stdlib.h:308:12:rand	12	static

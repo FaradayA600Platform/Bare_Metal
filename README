@@ -1,0 +1,33 @@
+
+How to compile?
+1. decompress the toolchain and set the path
+2. configure SoFia
+   * manual configure
+     make menuconfig
+   * use default config 
+     make a369_defconfig
+3. install toolchain arm-none-eabi-gcc(GCC4 with newlib)
+   SoFia will install toolchain automatically, 
+   if there is no arm-none-eabi-gcc in PATH.
+   Please config the USER PERMISSION
+   * For super user, please configure to 
+     CONFIG_SUPER_USER=y
+     # CONFIG_NORMAL_USER is not set
+   	 Toochian will be install in /opt/
+   * For normal user, please configure to 
+     # CONFIG_SUPER_USER is not set
+     CONFIG_NORMAL_USER=y
+   	 Toochian will be install in SoFia/Toolchian
+4. make
+
+
+
+How to run?
+1. This is a standalone diagnostic program on RAM mode. 
+   Please make sure RAM (DDR) is ready in the system.
+   For example, turn on system and run u-boot.
+2. Just load BIN/NonOS_QC.bin to 0x1000000 and run.
+   For example, use ICE or tftp in u-boot.
+
+
+

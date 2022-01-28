@@ -1,0 +1,3 @@
+strtok.c:24:21:rawmemchr	16	static
+string.h:197:14:strtok_r	24	static
+string.h:184:14:strtok	16	static

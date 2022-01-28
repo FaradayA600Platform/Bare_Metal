@@ -1,0 +1,15 @@
+serial.o:	serial.c
+serial.o:	$(TOP_DIR)/Include\SoFlexible.h
+serial.o:	$(TOP_DIR)/Include\types.h
+serial.o:	$(TOP_DIR)/Include\sizes.h
+serial.o:	$(TOP_DIR)/Board\board.h
+serial.o:	$(TOP_DIR)/Include\types.h
+serial.o:	$(TOP_DIR)/Board\platform_a369.h
+serial.o:	$(TOP_DIR)/Include\spec.h
+serial.o:	$(TOP_DIR)/CPU\cpu.h
+serial.o:	$(TOP_DIR)/Board\intc.h
+serial.o:	$(TOP_DIR)/Include\types.h
+serial.o:	$(TOP_DIR)/Include\spec_macro.h
+serial.o:	$(TOP_DIR)/Include\tool\bits.h
+serial.o:	$(TOP_DIR)/Include\system.h
+serial.o:	serial.h

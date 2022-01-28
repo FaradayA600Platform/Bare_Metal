@@ -1,0 +1,13 @@
+sprintf.c:46:12:skip_atoi	12	static
+sprintf.c:66:14:put_dec_trunc	28	static
+sprintf.c:102:14:put_dec_full	28	static
+sprintf.c:144:23:put_dec	48	static
+sprintf.c:186:14:number	168	static
+sprintf.c:285:14:string	52	static
+sprintf.c:323:14:pointer	36	static
+sprintf.c:345:12:vsnprintf_internal	100	static
+stdio.h:358:12:vsnprintf	24	static
+stdio.h:346:12:vsprintf	20	static
+stdio.h:344:12:vprintf	16	static
+stdio.h:354:12:snprintf	48	static
+stdio.h:330:12:sprintf	48	static

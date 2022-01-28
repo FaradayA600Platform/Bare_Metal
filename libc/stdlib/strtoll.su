@@ -1,0 +1,3 @@
+strtoll.c:22:27:__strtoull	72	static
+stdlib.h:216:22:strtoll	20	static
+stdlib.h:221:31:strtoull	20	static

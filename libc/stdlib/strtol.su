@@ -1,0 +1,3 @@
+strtol.c:17:15:__strtoul	44	static
+stdlib.h:188:17:strtol	20	static
+stdlib.h:192:26:strtoul	20	static

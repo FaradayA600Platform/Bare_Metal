@@ -1,0 +1,507 @@
+; DRAM ODT = 60 Ohm, PHY ODT = 60Ohm 
+; AL =0, CWL =6, CL =7, tWR =8
+SYStem.JTAGCLOCK 10MHz
+SYStem.CONFIG COREBASE          0x80810000 0x80910000 0x80a10000 0x80b10000 
+SYStem.CONFIG CTIBASE           0x80820000 0x80920000 0x80a20000 0x80b20000 
+SYStem.CONFIG CoreNumber 4
+SYStem.Up
+
+global &var
+
+; SCU initialization
+Data.Set 0x2D000060  %Long %LE  0xFFFFFFFF  ; enable PCLK (APB clock control register of the SCU)
+Data.Set 0x2D000050  %Long %LE  0xFFFFFFFF  ; enable HCLK (AHB clock control register of the SCU)
+Data.Set 0x2D000080  %Long %LE  0xFFFFFFFF  ; enable ACLK (AXI clock control register of the SCU)
+Data.Set 0x2D080020  %Long %LE  0xFFFFFFFF  ; enable IP clock (IP_EN of the secure EXTREG)
+Data.Set 0x2AE00050  %Long %LE  0xFFFFFFFF  ; enable IP clock (IP_EN of the non-secure EXTREG)
+
+Data.Set 0x2AE00064  %Long %LE  0xFFFFFFFF  ; release IP reset (sw_rstn of the non-secure EXTREG)
+Data.Set 0x2AE0006C  %Long %LE  0xFFFFFFFF  ; release IP reset (sw2_rstn of the non-secure EXTREG)
+Data.Set 0x2D080038  %Long %LE  0xFFFFFFFF  ; release IP reset (sw_rstn of the secure EXTREG)
+
+;Data.Set 0x2D080110  %Long %LE  0x000000F0  ; for coresight test
+;Data.Set 0x2D080144  %Long %LE  0x0003CD0E  ; config bp141, x2p_2_en, spi_en to non-secure (securecontrol of secure EXTREG)
+Data.Set 0x2D080144  %Long %LE  0x0003CD0C  ; config bp141, x2p_2_en, spi_en, dma_0_m_en to non-secure (securecontrol of secure EXTREG)
+;Data.Set 0x2D080144  %Long %LE  0x0007CD0C  ; config bp141, spi_en, dma_0_m_en to non-secure (securecontrol of secure EXTREG)
+
+; TZC_0 initialization
+;set default region of TZC_0 as non-secure
+Data.Set 0x2D200110  %Long %LE  0xC000000F  ;
+Data.Set 0x2D200114  %Long %LE  0xFFFFFFFF  ;
+;set region1(0xa000_0000~0xbfff_ffff) of TZC_0 as secure
+;Data.Set 0x2D200120  %Long %LE  0xA0000000  ;
+;Data.Set 0x2D200128  %Long %LE  0xBFFFFFFF  ;
+;Data.Set 0x2D200130  %Long %LE  0xC000000F  ;
+;Data.Set 0x2D200134  %Long %LE  0xFFFFFFFF  ;
+
+Data.Set 0x2D200004  %Long %LE  0x00000002  ;
+Data.Set 0x2D200008  %Long %LE  0x000F000F  ;
+
+;Data.Set 0x2D200110  %Long %LE  0xC000000F  ;
+;Data.Set 0x2D200120  %Long %LE  0x80000000  ;
+;Data.Set 0x2D200128  %Long %LE  0x90000000  ;
+;Data.Set 0x2D200130  %Long %LE  0xC000000F  ;
+;Data.Set 0x2D200004  %Long %LE  0x00000002  ;
+;Data.Set 0x2D200008  %Long %LE  0x0000000F  ;
+
+; TZC_1 initialization
+;set default region of TZC_1 as non-secure
+Data.Set 0x2D300110  %Long %LE  0xC000000F;
+Data.Set 0x2D300114  %Long %LE  0xFFFFFFFF;
+;set region1(0xa000_0000~0xbfff_ffff) of TZC_1 as secure
+;Data.Set 0x2D300120  %Long %LE  0xA0000000;
+;Data.Set 0x2D300128  %Long %LE  0xBFFFFFFF;
+;Data.Set 0x2D300130  %Long %LE  0xC000000F;
+;Data.Set 0x2D300134  %Long %LE  0xFFFFFFFF;
+
+Data.Set 0x2D300004  %Long %LE  0x00000002;
+Data.Set 0x2D300008  %Long %LE  0x000F000F;
+
+;Data.Set 0x2D300110  %Long %LE  0xC000000F;
+;Data.Set 0x2D300120  %Long %LE  0x80000000;
+;Data.Set 0x2D300128  %Long %LE  0x90000000;
+;Data.Set 0x2D300130  %Long %LE  0xC000000F;
+;Data.Set 0x2D300004  %Long %LE  0x00000002;
+;Data.Set 0x2D300008  %Long %LE  0x0000000F;
+
+; DDR initialization
+; ==========================================
+; DDR4 subsystem
+; ==========================================
+; addr[19:16] = 4'h0 ; cha_dfi
+; addr[19:16] = 4'h1 ; chb_dfi
+; addr[19:16] = 4'h2 ; cha_ctrl
+; addr[19:16] = 4'h3 ; chb_ctrl
+; addr[19:16] = 4'h4 ; cphy
+; addr[19:16] = 4'h5 ; cha_aphy
+; addr[19:16] = 4'h6 ; chb_aphy
+; addr[19:16] = 4'h7 ; cha_dphy_b0
+; addr[19:16] = 4'h8 ; cha_dphy_b1
+; addr[19:16] = 4'h9 ; chb_dphy_b0
+; addr[19:16] = 4'hA ; chb_dphy_b1
+; ==========================================
+
+;Data.Set 0x2A640050  %Long %LE  0x0000000F  ; testpad control of the cphy
+
+Data.Set 0x2D080148  %Long %LE  0x00000000  ; disable DDR interleave and assert PHY reset (DDR0_CTRL of secure EXTREG)
+;Data.Set 0x2D080148  %Long %LE  0x00000002  ; enable DDR interleave and assert PHY reset (DDR0_CTRL of secure EXTREG)
+wait 0.1s
+Data.Set 0x2D080148  %Long %LE  0x00000001  ; disable DDR interleave and release PHY reset (DDR0_CTRL of secure EXTREG)
+;Data.Set 0x2D080148  %Long %LE  0x00000003  ; enable DDR interleave and release PHY reset (DDR0_CTRL of secure EXTREG)
+
+
+
+
+
+;------------------- Step1 - change DDR PLL M/N - start -------------------------------
+
+; cha_dphy reset assert
+Data.Set 0x2A6700cc  %Long %LE  0x00000002  ; a_dphy_b0
+Data.Set 0x2A6800cc  %Long %LE  0x00000002  ; a_dphy_b1
+; chb_dphy reset assert
+Data.Set 0x2A6900cc  %Long %LE  0x00000002  ; b_dphy_b0
+Data.Set 0x2A6a00cc  %Long %LE  0x00000002  ; b_dphy_b1
+; cha_aphy reset assert
+Data.Set 0x2A6500a0  %Long %LE  0x00000002  ; a_aphy
+; chb_aphy reset assert
+Data.Set 0x2A6600a0  %Long %LE  0x00000002  ; b_aphy
+; cphy reset assert
+Data.Set 0x2A640058  %Long %LE  0x00000002  ; cphy
+
+wait 0.1s
+
+; cphy PLL setting
+; cphy PLL_CTRL1           0x44= 0x083f4006
+; m = 10'd533 = 10'h215 =
+; p = 6'd3
+; s = 3'd0
+;Data.Set 0x2A640044  %Long %LE  0x123f6403  ; cphy (400mhz)
+;Data.Set 0x2A640044  %Long %LE  0x0A3f6403  ; cphy (800mhz)
+;Data.Set 0x2A640044  %Long %LE  0x0A3F8543  ; cphy (1066mhz)
+;Data.Set 0x2A640044  %Long %LE  0x013F6403  ; cphy (1600mhz)
+;Data.Set 0x2A640044  %Long %LE  0x013F7483  ; cphy (1866mhz)
+Data.Set 0x2A640044  %Long %LE  0x013F8543  ; cphy (2133mhz)
+
+wait 0.1s
+
+; cha_dphy reset assert
+Data.Set 0x2A6700cc  %Long %LE  0x00000003  ; a_dphy_b0
+Data.Set 0x2A6800cc  %Long %LE  0x00000003  ; a_dphy_b1
+; chb_dphy reset assert
+Data.Set 0x2A6900cc  %Long %LE  0x00000003  ; b_dphy_b0
+Data.Set 0x2A6a00cc  %Long %LE  0x00000003  ; b_dphy_b1
+; cha_aphy reset de-assert
+Data.Set 0x2A6500a0  %Long %LE  0x00000003  ; a_aphy
+; chb_aphy reset de-assert
+Data.Set 0x2A6600a0  %Long %LE  0x00000003  ; b_aphy
+; cphy reset de-assert
+Data.Set 0x2A640058  %Long %LE  0x00000003  ; cphy
+
+; wait to aphy ready - channel A
+&var=d.l(d:0x2A6500E0)
+&var=&var&0x00100000
+WHILE &var!=0x00100000
+(
+&var=d.l(d:0x2A6500E0)
+&var=&var&0x00100000
+)
+
+; wait to aphy ready - channel B
+&var=d.l(d:0x2A6600E0)
+&var=&var&0x00100000
+WHILE &var!=0x00100000
+(
+&var=d.l(d:0x2A6600E0)
+&var=&var&0x00100000
+)
+
+;------------------- Step1 - change DDR PLL M/N - end -------------------------------
+
+
+
+
+
+;------------------- Step2 - Set FTDDR440 control register - start -------------------------------
+
+; Channel A ctrl setting
+Data.Set 0x2A620000  %Long %LE  0x08058100  ; Memory Controller Configure (LPDDR4 mode, 16-bits memory width)
+Data.Set 0x2A620020  %Long %LE  0x00103f7c  ; LPDDRx Mode Register Set Values for MR1/MR2/MR3/MR4
+Data.Set 0x2A620038  %Long %LE  0x00000002  ; LPDDRx Additive Latency Register
+Data.Set 0x2A62003c  %Long %LE  0x08000075  ; Rank Information Register (0x80000000, 16x10x3, 1GB)
+Data.Set 0x2A620040  %Long %LE  0x16162217  ; Timing Parameter 0
+Data.Set 0x2A620044  %Long %LE  0x64a18c6a  ; Timing Parameter 1
+Data.Set 0x2A620048  %Long %LE  0x03039a7f  ; Timing Parameter 2
+Data.Set 0x2A62004c  %Long %LE  0x00ff8764  ; Timing Parameter 3
+Data.Set 0x2A620050  %Long %LE  0x0000050a  ; Timing Parameter 4
+Data.Set 0x2A62005c  %Long %LE  0x50000000  ; Timing Parameter 7
+Data.Set 0x2A620060  %Long %LE  0x0000000e  ; Initialization of Waiting Cycle Count 1
+Data.Set 0x2A620064  %Long %LE  0x000000d4  ; Initialization of Waiting Cycle Count 2
+Data.Set 0x2A620068  %Long %LE  0x00000190  ; LPDDR4 2 us Wait Cycle Register
+Data.Set 0x2A62006c  %Long %LE  0x00061a80  ; LPDDR4 2 ms Wait Cycle Register
+Data.Set 0x2A620074  %Long %LE  0x00000000  ; EXIT SRF Control Register
+Data.Set 0x2A620100  %Long %LE  0x001600e5  ; Channel Arbitration Setup Register
+Data.Set 0x2A620104  %Long %LE  0x0f050506  ; Channel Arbiter Grant Count Register - A
+Data.Set 0x2A620108  %Long %LE  0x05080305  ; Channel Arbiter Grant Count Register - B
+Data.Set 0x2A620118  %Long %LE  0x00000002  ; Bandwidth Control Register
+Data.Set 0x2A62011c  %Long %LE  0x03030404  ; Bandwidth Control Command Count Register - A
+Data.Set 0x2A620120  %Long %LE  0x01010202  ; Bandwidth Control Command Count Register - B
+Data.Set 0x2A62012c  %Long %LE  0x00000000  ; Channel QoS Mapping Register
+Data.Set 0x2A620130  %Long %LE  0x00000000  ; AXI4 QoS Mapping Register 0
+Data.Set 0x2A620200  %Long %LE  0x10052008  ; DDRx PHY Write/Read Data Timing Control Register
+Data.Set 0x2A620080  %Long %LE  0x0000aa00  ; Command Flush Control Register
+Data.Set 0x2A620170  %Long %LE  0x00000000  ; Traffic Monitor Clock Cycle Register
+Data.Set 0x2A62008c  %Long %LE  0x81818181  ; AHB INCR Read Prefetch Length 1
+Data.Set 0x2A620090  %Long %LE  0x81818181  ; AHB INCR Read Prefetch Length 2
+Data.Set 0x2A6200a0  %Long %LE  0x00000001  ; DDR ELASTIC FIFO Control Register
+
+Data.Set 0x2A620204  %Long %LE  0x00000010  ; Channel A DFI Training Control Register
+Data.Set 0x2A620210  %Long %LE  0x00000019  ;
+Data.Set 0x2A620218  %Long %LE  0x00000043  ;
+Data.Set 0x2A620300  %Long %LE  0x007f007c  ; FSP1 MR2 and MR1
+Data.Set 0x2A620304  %Long %LE  0x00660030  ; FSP1 MR11 and MR3
+Data.Set 0x2A620308  %Long %LE  0x0000000e  ; FSP1 MR13 and MR12
+Data.Set 0x2A62030c  %Long %LE  0x0000000e  ; FSP1 MR22 and MR14
+Data.Set 0x2A620310  %Long %LE  0xa0093818  ;
+Data.Set 0x2A620314  %Long %LE  0x26847c9a  ;
+Data.Set 0x2A620318  %Long %LE  0x03031030  ;
+Data.Set 0x2A62031c  %Long %LE  0x00938764  ;
+Data.Set 0x2A620320  %Long %LE  0x00000a18  ;
+Data.Set 0x2A620324  %Long %LE  0x00000000  ;
+Data.Set 0x2A620328  %Long %LE  0x00000000  ;
+Data.Set 0x2A62032c  %Long %LE  0x32331414  ;
+Data.Set 0x2A620330  %Long %LE  0x00000002  ;
+Data.Set 0x2A620334  %Long %LE  0x000e2011  ; FSP1 wren & trddata_en
+Data.Set 0x2A620338  %Long %LE  0x00000a0a  ;
+Data.Set 0x2A62033C  %Long %LE  0x000fffff  ;
+Data.Set 0x2A620340  %Long %LE  0x001b003c  ; FSP2 MR2 and MR1
+Data.Set 0x2A620344  %Long %LE  0x00660010  ; FSP2 MR11 and MR3
+Data.Set 0x2A620348  %Long %LE  0x0000000e  ; FSP2 MR13 and MR12
+Data.Set 0x2A62034c  %Long %LE  0x0000000e  ; FSP2 MR22 and MR14
+Data.Set 0x2A620350  %Long %LE  0x300a120c  ;
+Data.Set 0x2A620354  %Long %LE  0x02033524  ;
+Data.Set 0x2A620358  %Long %LE  0x03022421  ;
+Data.Set 0x2A62035c  %Long %LE  0x00641109  ;
+Data.Set 0x2A620360  %Long %LE  0x0000090a  ;
+Data.Set 0x2A620364  %Long %LE  0x00000000  ;
+Data.Set 0x2A620368  %Long %LE  0x00000000  ;
+Data.Set 0x2A62036c  %Long %LE  0x32331414  ;
+Data.Set 0x2A620370  %Long %LE  0x00000002  ;
+Data.Set 0x2A620374  %Long %LE  0x00052005  ; FSP2 wren & trddata_en
+Data.Set 0x2A620378  %Long %LE  0x00000a0a  ;
+Data.Set 0x2A62037C  %Long %LE  0x000fffff  ;
+
+; Channel B ctrl setting
+Data.Set 0x2A630000  %Long %LE  0x08058100  ; Memory Controller Configure (LPDDR4 mode, 16-bits memory width)
+Data.Set 0x2A630020  %Long %LE  0x00103f7c  ; LPDDRx Mode Register Set Values for MR1/MR2/MR3/MR4
+Data.Set 0x2A630038  %Long %LE  0x00000002  ; LPDDRx Additive Latency Register
+Data.Set 0x2A63003c  %Long %LE  0x0C000075  ; Rank Information Register (0xC0000000, 16x10x3, 1GB)
+Data.Set 0x2A630040  %Long %LE  0x16162217  ; Timing Parameter 0
+Data.Set 0x2A630044  %Long %LE  0x64a18c6a  ; Timing Parameter 1
+Data.Set 0x2A630048  %Long %LE  0x03039a7f  ; Timing Parameter 2
+Data.Set 0x2A63004c  %Long %LE  0x00ff8764  ; Timing Parameter 3
+Data.Set 0x2A630050  %Long %LE  0x0000050a  ; Timing Parameter 4
+Data.Set 0x2A63005c  %Long %LE  0x50000000  ; Timing Parameter 7
+Data.Set 0x2A630060  %Long %LE  0x0000000e  ; Initialization of Waiting Cycle Count 1
+Data.Set 0x2A630064  %Long %LE  0x000000d4  ; Initialization of Waiting Cycle Count 2
+Data.Set 0x2A630068  %Long %LE  0x00000190  ; LPDDR4 2 us Wait Cycle Register
+Data.Set 0x2A63006c  %Long %LE  0x00061a80  ; LPDDR4 2 ms Wait Cycle Register
+Data.Set 0x2A630074  %Long %LE  0x00000000  ; EXIT SRF Control Register
+Data.Set 0x2A630100  %Long %LE  0x001600e5  ; Channel Arbitration Setup Register
+Data.Set 0x2A630104  %Long %LE  0x0f050506  ; Channel Arbiter Grant Count Register - A
+Data.Set 0x2A630108  %Long %LE  0x05080305  ; Channel Arbiter Grant Count Register - B
+Data.Set 0x2A630118  %Long %LE  0x00000002  ; Bandwidth Control Register
+Data.Set 0x2A63011c  %Long %LE  0x03030404  ; Bandwidth Control Command Count Register - A
+Data.Set 0x2A630120  %Long %LE  0x01010202  ; Bandwidth Control Command Count Register - B
+Data.Set 0x2A63012c  %Long %LE  0x00000000  ; Channel QoS Mapping Register
+Data.Set 0x2A630130  %Long %LE  0x00000000  ; AXI4 QoS Mapping Register 0
+Data.Set 0x2A630200  %Long %LE  0x10052008  ; DDRx PHY Write/Read Data Timing Control Register
+Data.Set 0x2A630080  %Long %LE  0x0000aa00  ; Command Flush Control Register
+Data.Set 0x2A630170  %Long %LE  0x00000000  ; Traffic Monitor Clock Cycle Register
+Data.Set 0x2A63008c  %Long %LE  0x81818181  ; AHB INCR Read Prefetch Length 1
+Data.Set 0x2A630090  %Long %LE  0x81818181  ; AHB INCR Read Prefetch Length 2
+Data.Set 0x2A6300a0  %Long %LE  0x00000001  ; DDR ELASTIC FIFO Control Register
+
+Data.Set 0x2A630204  %Long %LE  0x00000010  ; Channel B DFI Training Control Register
+Data.Set 0x2A630210  %Long %LE  0x00000019  ;
+Data.Set 0x2A630218  %Long %LE  0x00000043  ;
+Data.Set 0x2A630300  %Long %LE  0x007f007c  ; FSP1 MR2 and MR1
+Data.Set 0x2A630304  %Long %LE  0x00660030  ; FSP1 MR11 and MR3
+Data.Set 0x2A630308  %Long %LE  0x0000000e  ; FSP1 MR13 and MR12
+Data.Set 0x2A63030c  %Long %LE  0x0000000e  ; FSP1 MR22 and MR14
+Data.Set 0x2A630310  %Long %LE  0xa0093818  ;
+Data.Set 0x2A630314  %Long %LE  0x26847c9a  ;
+Data.Set 0x2A630318  %Long %LE  0x03031030  ;
+Data.Set 0x2A63031c  %Long %LE  0x00938764  ;
+Data.Set 0x2A630320  %Long %LE  0x00000a18  ;
+Data.Set 0x2A630324  %Long %LE  0x00000000  ;
+Data.Set 0x2A630328  %Long %LE  0x00000000  ;
+Data.Set 0x2A63032c  %Long %LE  0x32331414  ;
+Data.Set 0x2A630330  %Long %LE  0x00000002  ;
+Data.Set 0x2A630334  %Long %LE  0x000e2011  ; FSP1 wren & trddata_en
+Data.Set 0x2A630338  %Long %LE  0x00000a0a  ;
+Data.Set 0x2A63033C  %Long %LE  0x000fffff  ;
+Data.Set 0x2A630340  %Long %LE  0x001b003c  ; FSP2 MR2 and MR1
+Data.Set 0x2A630344  %Long %LE  0x00660010  ; FSP2 MR11 and MR3
+Data.Set 0x2A630348  %Long %LE  0x0000000e  ; FSP2 MR13 and MR12
+Data.Set 0x2A63034c  %Long %LE  0x0000000e  ; FSP2 MR22 and MR14
+Data.Set 0x2A630350  %Long %LE  0x300a120c  ;
+Data.Set 0x2A630354  %Long %LE  0x02033524  ;
+Data.Set 0x2A630358  %Long %LE  0x03032421  ;
+Data.Set 0x2A63035c  %Long %LE  0x00641109  ;
+Data.Set 0x2A630360  %Long %LE  0x0000090a  ;
+Data.Set 0x2A630364  %Long %LE  0x00000000  ;
+Data.Set 0x2A630368  %Long %LE  0x00000000  ;
+Data.Set 0x2A63036c  %Long %LE  0x32331414  ;
+Data.Set 0x2A630370  %Long %LE  0x00000002  ;
+Data.Set 0x2A630374  %Long %LE  0x00052005  ;
+Data.Set 0x2A630378  %Long %LE  0x00000a0a  ;
+Data.Set 0x2A63037C  %Long %LE  0x000fffff  ;
+
+;------------------- Step2 - Set FTDDR440 control register - end -------------------------------
+
+
+
+
+
+;------------------- Step3 - Set pin swap - start -------------------------------
+
+;Data.Set 0x2A6001B0  %Long %LE  0x00000001  ; D PHY Byte Swap
+Data.Set 0x2A600160  %Long %LE  0x02105423  ; CA PHY Pin Swap Register 0
+Data.Set 0x2A600164  %Long %LE  0x0000001e  ; CA PHY Pin Swap Register 1
+Data.Set 0x2A6001C0  %Long %LE  0x32104756  ; D PHY Byte0 Swap regsiter 0
+Data.Set 0x2A6001C4  %Long %LE  0x20137654  ; D PHY Byte0 Swap regsiter 1
+Data.Set 0x2A6001C8  %Long %LE  0x32104756  ; D PHY Byte0 Swap regsiter 2
+Data.Set 0x2A6001D0  %Long %LE  0x45673021  ; D PHY Byte1 Swap regsiter 0
+Data.Set 0x2A6001D4  %Long %LE  0x45673102  ; D PHY Byte1 Swap regsiter 1
+Data.Set 0x2A6001D8  %Long %LE  0x45673021  ; D PHY Byte1 Swap regsiter 2
+;Data.Set 0x2A6101B0  %Long %LE  0x00000001  ; D PHY Byte Swap
+Data.Set 0x2A610160  %Long %LE  0x02105243  ; CA PHY Pin Swap Register 0
+Data.Set 0x2A610164  %Long %LE  0x0000001b  ; CA PHY Pin Swap Register 1
+Data.Set 0x2A6101C0  %Long %LE  0x45673021  ; D PHY Byte0 Swap regsiter 0
+Data.Set 0x2A6101C4  %Long %LE  0x45673102  ; D PHY Byte0 Swap regsiter 1
+Data.Set 0x2A6101C8  %Long %LE  0x45673021  ; D PHY Byte0 Swap regsiter 2
+Data.Set 0x2A6101D0  %Long %LE  0x32104756  ; D PHY Byte1 Swap regsiter 0
+Data.Set 0x2A6101D4  %Long %LE  0x20137654  ; D PHY Byte1 Swap regsiter 1
+Data.Set 0x2A6101D8  %Long %LE  0x32104756  ; D PHY Byte1 Swap regsiter 2
+
+;------------------- Step3 - Set pin swap - end -------------------------------
+
+
+
+
+
+;------------------- Step4 - Set FTDFIW400 control register - start -------------------------------
+
+; Channel A setting
+
+Data.Set 0x2A600004  %Long %LE  0x00031c00  ; set freq_set_point
+Data.Set 0x2A60000c  %Long %LE  0x00000000  ; disable update control
+Data.Set 0x2A600010  %Long %LE  0x00000000  ; disable update control
+Data.Set 0x2A600014  %Long %LE  0x00000000  ; disable update control
+Data.Set 0x2A600020  %Long %LE  0x00120e5c  ; cbt
+Data.Set 0x2A600028  %Long %LE  0x01030014  ; weye/reye per-bit
+Data.Set 0x2A60002C  %Long %LE  0x10000054  ; weye setting
+Data.Set 0x2A600030  %Long %LE  0x55555555  ; weye external pattern
+Data.Set 0x2A600034  %Long %LE  0x5525151c  ; rvref setting
+Data.Set 0x2A60003C  %Long %LE  0x01180100  ; wvref setting
+Data.Set 0x2A600040  %Long %LE  0x00040204  ; FSP2's DFI timing setting
+Data.Set 0x2A600044  %Long %LE  0x00080210  ; FSP1's DFI timing setting
+Data.Set 0x2A600048  %Long %LE  0x0d0b060e  ; FSP2's timing setting
+Data.Set 0x2A60004c  %Long %LE  0x1e1e1e1e  ; FSP1's timing setting
+Data.Set 0x2A600050  %Long %LE  0x25241102  ; FSP2's timing setting
+Data.Set 0x2A600054  %Long %LE  0x858a1e0f  ; FSP1's timing setting
+Data.Set 0x2A600058  %Long %LE  0x40050325  ; FSP2's timing setting
+Data.Set 0x2A60005c  %Long %LE  0xf0100f25  ; FSP1's timing setting
+Data.Set 0x2A600060  %Long %LE  0x20040507  ; FSP2's timing setting
+Data.Set 0x2A600064  %Long %LE  0xa00f100f  ; FSP1's timing setting
+Data.Set 0x2A600068  %Long %LE  0x00002b56  ; FSP2's timing setting
+Data.Set 0x2A60006c  %Long %LE  0x0000ffff  ; FSP1's timing setting
+Data.Set 0x2A600080  %Long %LE  0x0010001b  ; FSP2's MR3, MR2, RL=20, WL=10
+Data.Set 0x2A600084  %Long %LE  0x0010007f  ; FSP1's MR3, MR2, RL=36, WL=34
+Data.Set 0x2A600088  %Long %LE  0x00000000  ; MR13
+Data.Set 0x2A600100  %Long %LE  0x07ff07ff  ; FSP0's caphdly and csdly
+Data.Set 0x2A600238  %Long %LE  0x00002000  ; FSP2's R0 B0 RVREF
+Data.Set 0x2A60023C  %Long %LE  0x00002000  ; FSP1's R0 B0 RVREF
+Data.Set 0x2A600338  %Long %LE  0x00002000  ; FSP2's R0 B1 RVREF
+Data.Set 0x2A60033C  %Long %LE  0x00002000  ; FSP1's R0 B1 RVREF
+
+; Channel B setting
+
+Data.Set 0x2A610004  %Long %LE  0x00031c00  ; set freq_set_point
+Data.Set 0x2A61000c  %Long %LE  0x00000000  ; disable update control
+Data.Set 0x2A610010  %Long %LE  0x00000000  ; disable update control
+Data.Set 0x2A610014  %Long %LE  0x00000000  ; disable update control
+Data.Set 0x2A610020  %Long %LE  0x00120e5c  ; cbt
+Data.Set 0x2A610028  %Long %LE  0x01030014  ; weye/reye per-bit
+Data.Set 0x2A61002C  %Long %LE  0x10000054  ; weye setting
+Data.Set 0x2A610030  %Long %LE  0x55555555  ; weye external pattern
+Data.Set 0x2A610034  %Long %LE  0x5525151c  ; rvref setting
+Data.Set 0x2A61003C  %Long %LE  0x01180100  ; wvref setting
+Data.Set 0x2A610040  %Long %LE  0x00040204  ; FSP2's DFI timing setting
+Data.Set 0x2A610044  %Long %LE  0x00080210  ; FSP1's DFI timing setting
+Data.Set 0x2A610048  %Long %LE  0x0d0b060e  ; FSP2's timing setting
+Data.Set 0x2A61004c  %Long %LE  0x1e1e1e1e  ; FSP1's timing setting
+Data.Set 0x2A610050  %Long %LE  0x25241102  ; FSP2's timing setting
+Data.Set 0x2A610054  %Long %LE  0x858a1e0f  ; FSP1's timing setting
+Data.Set 0x2A610058  %Long %LE  0x40050325  ; FSP2's timing setting
+Data.Set 0x2A61005c  %Long %LE  0xf0100f25  ; FSP1's timing setting
+Data.Set 0x2A610060  %Long %LE  0x20040507  ; FSP2's timing setting
+Data.Set 0x2A610064  %Long %LE  0xa00f100f  ; FSP1's timing setting
+Data.Set 0x2A610068  %Long %LE  0x00002b56  ; FSP2's timing setting
+Data.Set 0x2A61006c  %Long %LE  0x0000ffff  ; FSP1's timing setting
+Data.Set 0x2A610080  %Long %LE  0x0010001b  ; FSP2's MR3, MR2, RL=20, WL=10
+Data.Set 0x2A610084  %Long %LE  0x0010007f  ; FSP1's MR3, MR2, RL=36, WL=34
+Data.Set 0x2A610088  %Long %LE  0x00000000  ; MR13
+Data.Set 0x2A610100  %Long %LE  0x07ff07ff  ; FSP0's caphdly and csdly
+Data.Set 0x2A610238  %Long %LE  0x00002000  ; FSP2's R0 B0 RVREF
+Data.Set 0x2A61023C  %Long %LE  0x00002000  ; FSP1's R0 B0 RVREF
+Data.Set 0x2A610338  %Long %LE  0x00002000  ; FSP2's R0 B1 RVREF
+Data.Set 0x2A61033C  %Long %LE  0x00002000  ; FSP1's R0 B1 RVREF
+
+;------------------- Step4 - Set FTDFIW400 control register - end -------------------------------
+
+
+
+
+
+;------------------- Step5 - Change to boot frequency and enable the training - start -------------------------------
+
+Data.Set 0x2A600004  %Long %LE  0x00039c7f  ; enable wrlvl, reye, wl2nd, weye
+Data.Set 0x2A610004  %Long %LE  0x00039c7f  ; enable wrlvl, reye, wl2nd, weye
+
+; wait to cha_dfi boot sequence completed
+&var=d.l(d:0x2A600004)
+&var=&var&0x00008000
+WHILE &var==0x00008000
+(
+&var=d.l(d:0x2A600004)
+&var=&var&0x00008000
+)
+
+; wait to chb_dfi boot sequence completed
+&var=d.l(d:0x2A610004)
+&var=&var&0x00008000
+WHILE &var==0x00008000
+(
+&var=d.l(d:0x2A610004)
+&var=&var&0x00008000
+)
+
+;------------------- Step5 - Change to boot frequency and enable the training - end -------------------------------
+
+
+
+
+
+;------------------- Step6 - Trigger DDR initialization and Training - start -------------------------------
+
+Data.Set 0x2A620204  %Long %LE  0x00000011  ; DFI Training Control Register (dfi_auto_init_en)
+Data.Set 0x2A630204  %Long %LE  0x00000011  ; DFI Training Control Register (dfi_auto_init_en)
+Data.Set 0x2A620004  %Long %LE  0x00000001  ; Memory Controller Command Register (Initial command)
+Data.Set 0x2A630004  %Long %LE  0x00000001  ; Memory Controller Command Register (Initial command)
+
+
+; wait to DDR0 init_ok
+; @(posedge AXI_TB.AXI_Core.U_DDR_TOP.init_ok_u0);
+&var=d.l(d:0x2D080148)
+&var=&var&0x80000000
+WHILE &var!=0x80000000
+(
+&var=d.l(d:0x2D080148)
+&var=&var&0x80000000
+)
+
+; wait to DDR1 init_ok
+; @(posedge AXI_TB.AXI_Core.U_DDR_TOP.init_ok_u1);
+&var=d.l(d:0x2D08014C)
+&var=&var&0x80000000
+WHILE &var!=0x80000000
+(
+&var=d.l(d:0x2D08014C)
+&var=&var&0x80000000
+)
+
+;------------------- Step6 - Trigger DDR initialization and Training - end -------------------------------
+
+
+
+
+
+wait 0.1s
+
+Data.Set 0x2CC04000  %Long %LE  0x00000001  ; enable timestamp counter of coresight
+Data.Set 0x2CC07000  %Long %LE  0x00000001  ; enable timestamp counter of coresight
+
+Data.Set 0x28030000  %Long %LE  0x00000000  ; clear sram region of smp holding pen
+Data.Set 0x28030004  %Long %LE  0x00000000  ; clear sram region of smp holding pen
+Data.Set 0x28030008  %Long %LE  0x00000000  ; clear sram region of smp holding pen
+Data.Set 0x2803000C  %Long %LE  0x00000000  ; clear sram region of smp holding pen
+Data.Set 0x2d080014  %Long %LE  0x18c025
+Data.Set 0x2D080050  %Long %LE  0x00000010
+;Data.Set 0x2AE00188  %Long %LE  0x00008003
+
+;Data.LOAD.Binary faraday.raw 0xc0000000
+Data.LOAD.Binary  output\NonOS_QC.bin 0x80800000
+Register.set pc 0x80800000
+Go
+
+;Data.LOAD.Binary Y:\pbs\U-boot_201907\u-boot.bin 0x80800000
+;Data.LOAD.Binary Y:\pbs\U-boot_202104\u-boot.bin 0x80800000
+
+;Data.LOAD.Binary Y:\pbs\linux-4.14.136\arch\arm64\boot\dts\faraday\a600.dtb 0x83000000
+;Data.LOAD.Binary Y:\pbs\linux-5.10.21\arch\arm64\boot\dts\faraday\faraday-a600.dtb 0x83000000
+;Data.LOAD.Binary Y:\pbs\linux-4.14.136\arch\arm64\boot\uImage 0x83080000
+;Data.LOAD.Binary Y:\pbs\linux-5.10.21\arch\arm64\boot\uImage 0x83080000
+
+
+
+;core 0
+;Register.set pc 0x80800000
+;core 1
+;Register.set pc 0x80800000
+;core 2
+;Register.set pc 0x80800000
+;core 3
+;Register.set pc 0x80800000
+;core 0
+;Go

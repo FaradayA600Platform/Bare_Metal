@@ -1,0 +1,98 @@
+#
+# Automatically generated make config: don't edit
+# Dist builder
+# Mon Oct 18 16:08:16 2021
+#
+
+#
+# Faraday SoFia Configuration ---
+#
+
+#
+# Environment Setting
+#
+# CONFIG_SUPER_USER is not set
+CONFIG_NORMAL_USER=y
+# CONFIG_CCACHE is not set
+CONFIG_USE_FLIB_PRINTF=y
+# CONFIG_PLATFORM_A380 is not set
+# CONFIG_PLATFORM_A500 is not set
+CONFIG_PLATFORM_A600=y
+# CONFIG_CPU_FA626TE is not set
+# CONFIG_CPU_CA9 is not set
+CONFIG_CPU_CA53=y
+CONFIG_ARMV8=y
+
+#
+# Memory Setting
+#
+CONFIG_STACK_ADDR=0x28082000
+CONFIG_TEXT_BASE=0x28000000
+CONFIG_MEM_BASE=0x28000000
+CONFIG_MEM_SIZE=0x80000
+CONFIG_NORMAL_VECTOR=y
+# CONFIG_HIGH_VECTOR is not set
+# CONFIG_REDIRECT_VECTOR is not set
+# CONFIG_VBAR_REMAP_TEXT_BASE is not set
+CONFIG_MMU=y
+# CONFIG_START_W_MMU is not set
+
+#
+# System Setting
+#
+# CONFIG_SYS_ICACHE_OFF is not set
+CONFIG_JIFFIES=y
+
+#
+# Interrupt Setting
+#
+# CONFIG_FTINTC030 is not set
+# CONFIG_FTINTC020 is not set
+# CONFIG_FTINTC010 is not set
+# CONFIG_GIC is not set
+CONFIG_GIC400=y
+# CONFIG_EXTERNAL_GIC is not set
+CONFIG_EXT_GIC_IRQ_N=90
+
+#
+# Faraday SOC IP Tests
+#
+CONFIG_FTTIMER=y
+# CONFIG_CONFIG_TMR_EXTCLK is not set
+CONFIG_FTPWMTMR010=y
+# CONFIG_FTPWMTMR010_EXTCLK is not set
+CONFIG_FTDMAC030=y
+CONFIG_FTDMAC030_CHANNEL_COUNT=4
+# CONFIG_FTGPIO010 is not set
+CONFIG_FTIIC010=y
+# CONFIG_FTSDC021 is not set
+# CONFIG_FTSPI020 is not set
+# CONFIG_FTLCD210 is not set
+CONFIG_FTSSP010=y
+CONFIG_FTSSP010_I2S=y
+# CONFIG_FTUART010 is not set
+# CONFIG_FTGMAC030 is not set
+# CONFIG_FTWDT011 is not set
+# CONFIG_HYPERBUS is not set
+# CONFIG_NEON_CPAT is not set
+# CONFIG_SOTERIA is not set
+# CONFIG_DDR_INTERLEAVE is not set
+
+#
+# user
+#
+# CONFIG_QC is not set
+# CONFIG_DHRY is not set
+# CONFIG_COREMARK is not set
+
+#
+# C Library Options ---
+#
+CONFIG_LIBC_PRINTF=y
+CONFIG_LIBC_PRINTF_MIN=y
+# CONFIG_LIBC_PRINTF_STD is not set
+CONFIG_VFS=y
+# CONFIG_LIBC_PRINTF_FPSUPP is not set
+CONFIG_LIBC_MALLOC=y
+CONFIG_LIBC_MALLOC_SIZE=65536
+# CONFIG_LIBC_TIME is not set

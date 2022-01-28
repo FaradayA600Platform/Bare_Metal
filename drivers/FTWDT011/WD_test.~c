@@ -1,0 +1,288 @@
+#include <stdio.h>
+#include    "SoFlexible.h"
+#include "WD_test.h"
+//#include "fLib.h"
+//#include "common.h"
+#include "watch_dog.h"
+//#include "interrupt.h"
+#include "timer.h"
+
+#define SLOW_SYSTEM
+
+extern void Output2DebugPort(UINT32);
+extern int Show_Number1(UINT32);
+
+int WatchDogTest(UINT32);
+void WDIRQServiceRoutine(void);
+////////////////////////////////////////////////////////////////////////////////
+//extern UINT64 Timer0_T1Tick;		//in the board.c of fLib
+extern UINT32 T1_Tick;
+
+extern void Timer1_Tick(void);
+extern UINT32 fLib_CurrentT1Tick(void); 
+
+UINT32 WD_IntFlag;
+UINT32 WD_TEST_RESULT;
+//#define  IRQ_TIMER0_T1 19
+#define     QC_MODE             0x80
+#define Timer0_T1Tick T1_Tick
+//	Timer0_T1_Tick() --> Timer1_Tick()
+#define Timer0_T1_Tick Timer1_Tick
+#define IRQ_TIMER0_T1                                   19
+#define IRQ_WATCHDOG                                    16
+#define EXIT_TUBE_FAIL FALSE
+#define EXIT_TUBE_PASS TRUE
+//fLib_CurrentTimer0_T1Tick() --> UINT32 fLib_CurrentT1Tick() 
+#define fLib_CurrentTimer0_T1Tick fLib_CurrentT1Tick 
+////////////////////////////////////////////////////////////////////////////////
+
+unsigned int ti2=0;
+extern void fLib_WatchDog_ReStart(void);
+void WDT_Clear_Status()
+{
+static int i;
+    fLib_ClearInt(IRQ_IAmIRQ, IRQ_TIMER0_T1);
+	fLib_WatchDog_ReStart();
+	ti2++;
+}
+
+void WatchDogStart(void)
+{
+	EnableIRQ();				//It enables ARM's IRQ in the Boot.s	
+	
+	//Enable WD IRQ of INTC
+	UnmaskIRQ(IRQ_WATCHDOG);
+	SetIRQmode(IRQ_WATCHDOG,EDGE);
+	fLib_WatchDog_SetIntCounter(0xff);	//signal asserting 256 clock cycles
+	//louis@20070702
+	fLib_WatchDog_SetAutoReLoad(APB_CLK); 
+	fLib_WatchDog_ReStart();
+//	fLib_WatchDog_SysIntEnable();		//Enable WD Int
+	fLib_WatchDog_Enable();			//Enable WD
+}
+
+
+int WatchDogTest(UINT32 mode)
+{
+    UINT32 current_tick,counter,nResultStatus,j;
+    int result = 0;
+
+	printf("\rWatchDog Test...\n");
+    if (mode & QC_MODE){
+    	j=(mode & 0xF);
+    
+    }else{
+		printf("Please select clock source:(1)PCLK (2)32.768KHz(external)\r\n"); 
+		scanf("%d",&j);
+  	}
+    
+   if(j==1)
+        *(unsigned int *)(WDT_FTWDT010_PA_BASE+WD_CR)=*(unsigned int *)(WDT_FTWDT010_PA_BASE+WD_CR)&(~0x10);
+    else if(j==2)
+        *(unsigned int *)(WDT_FTWDT010_PA_BASE+WD_CR)=*(unsigned int *)(WDT_FTWDT010_PA_BASE+WD_CR)| (0x10);
+    else
+        return 0;
+
+	WD_TEST_RESULT=TRUE;
+	WD_IntFlag=0;
+	Timer0_T1Tick = 0;
+	
+	EnableIRQ();				//It enables ARM's IRQ in the Boot.s
+	fLib_Timer_Init(1, 1, Timer0_T1_Tick);
+
+	//Ser ISR
+	fLib_ConnectInt(IRQ_IAmIRQ, IRQ_WATCHDOG, WDIRQServiceRoutine);	//it only can be called once? 
+    
+	nResultStatus = EXIT_TUBE_FAIL;
+	
+	//Enable WD IRQ of INTC
+	UnmaskIRQ(IRQ_WATCHDOG);
+	SetIRQmode(IRQ_WATCHDOG,EDGE);
+	fLib_WatchDog_SetIntCounter(0xff);	//signal asserting 256 clock cycles
+	fLib_WatchDog_SetAutoReLoad(APB_CLK);	
+	fLib_WatchDog_ReStart();
+	fLib_WatchDog_SysIntEnable();		//Enable WD Int
+	fLib_WatchDog_Enable();			//Enable WD
+
+	 while (WD_IntFlag == 0)
+	 {
+//	    current_tick = fLib_CurrentTimer0_T1Tick();
+	    current_tick = fLib_CurrentT1Tick();
+//   		counter = Show_Number1(current_tick);
+#if 1
+   		counter = current_tick%100;
+		counter =(current_tick/10)*16 + current_tick%10;
+#else
+//		counter =(current_tick/10)<<14 + (current_tick%10)<<10;
+#endif
+   		if ( counter == 3) // 3 sec
+   		    break;
+	 }
+
+	if (WD_IntFlag == 1)
+	    nResultStatus = EXIT_TUBE_PASS;
+
+	fLib_WatchDog_SysIntDisable();
+	fLib_WatchDog_Disable();
+	MaskIRQ(IRQ_WATCHDOG);
+	fLib_CloseInt(IRQ_IAmIRQ, IRQ_WATCHDOG);				//close ISR
+	fLib_Timer_Close(1);
+	DisableIRQ();				//It disables ARM's IRQ in the Boot.s
+	
+	if (nResultStatus == EXIT_TUBE_PASS)
+	{
+        printf("\rPass!\n");
+        //printf("WatchDog system interrupt test pass!\n");
+        result = 1;
+	}
+	else
+	{
+        printf("\rFail!\n");
+        //printf("WatchDog system interrupt test fail!\n");    
+	    WD_TEST_RESULT=FALSE;
+	    result = 0;
+	}
+
+//	Output2DebugPort(nResultStatus);	
+	printf("End WatchDog Test!\n");   
+	
+	return result;
+}
+
+extern TURBO_test(unsigned int);
+void WatchDogResetTest()
+{
+    int i;
+    /* test item (FCS,turbo mode set to fail state, watchdog reset recover normal) */
+    
+    /* watchdog turning on */
+    printf("Watch Dog Reset Test Start\r\n");
+    printf("Affect PMU WRo setting (Y/N => 1/0):\r\n");
+    scanf("%d",&i);
+    printf("\r");
+   	#if defined(CONFIG_A360)
+    	if(i==1)
+        	*(unsigned int *)(PMU_FTPMU010_PA_BASE + 0x10) = *(unsigned int *)(PMU_FTPMU010_PA_BASE + 0x10) | 0x20000;
+    	else
+        	*(unsigned int *)(PMU_FTPMU010_PA_BASE + 0x10) = *(unsigned int *)(PMU_FTPMU010_PA_BASE + 0x10) & (~0x20000);
+    #endif
+    
+    fLib_Timer_Init(1, 1000, WDT_Clear_Status);
+    WatchDogStart();
+    fLib_WatchDog_SysResetEnable();
+    
+    /*  Turbo mode bit: */
+    fLib_Timer_Close(1);
+    //turbo_test_func();
+    WDT_Clear_Status();
+
+
+/* 
+    FCS:
+    multiple = 60
+    HCLK = 3.6864*80/2 = 147.456   
+*/
+    //fcs_test_func();  
+#ifndef SLOW_SYSTEM
+    fLib_Timer_Init(1, 10000, WDT_Clear_Status);
+#else
+    // because of system is slow
+    fLib_Timer_Init(1, 1000, WDT_Clear_Status);
+#endif
+    {
+        unsigned int i=0;
+#ifdef USE_FLIB_PRINTF
+        fLib_DebugPrintString("Running\0");
+#else
+        printf("Running");
+        fflush(stdout);
+#endif
+
+        while(1)
+        {   
+            i++;
+#ifndef SLOW_SYSTEM
+            if(i>0x500000){
+#else
+            if(i>0x2000000){
+#endif
+            	printf("\n\rThe watchdog test is FAIL\n");
+            	fLib_Timer_Close(1);
+            	break;
+            }
+            
+            if(i==0x50000){
+	            	printf("\n\rStop Timer for test watchdog\n");
+	            	printf("The test is PASS when CPU reset\n");
+	            	printf("Waiting CPU reset\n"); 
+				 	fLib_Timer_Close(1);
+            }	  
+
+            if(!(i&0xfff))
+#ifdef USE_FLIB_PRINTF
+//				fLib_DebugPrintChar('.');
+#else
+//				;
+				// There is some problem about 
+	        	printf(".");
+		        //fflush(stdout);
+#endif
+        }
+    }
+}
+
+
+void WDIRQServiceRoutine(void)
+{
+	WD_IntFlag = 1;
+	fLib_WatchDog_ClearStatus();
+	ClearIRQStatus(IRQ_WATCHDOG);
+}
+
+int WatchDogTest_QC()
+{
+	return WatchDogTest(QC_MODE|0x1);
+}
+
+void Reset_Board()
+{
+	fLib_WatchDog_SetIntCounter(1);
+	fLib_WatchDog_SetAutoReLoad(1);	
+	fLib_WatchDog_ReStart();
+	fLib_WatchDog_Enable();			//Enable WD
+	fLib_WatchDog_SysResetEnable();
+}
+
+FTWDT010_Test_Main()
+{
+	int item;
+
+	while (1) {
+		printf("Choose a test item:\n\n");
+		printf("1: Watchdog Test \n");
+		printf("2: Watchdog Reset Test\n");
+		printf("3: Reset Board\n");
+		scanf("%d", &item);
+
+		switch (item) {
+			case 1:
+				WatchDogTest(0);
+				return;
+				break;
+
+			case 2:
+				WatchDogResetTest();
+				return;
+				break;
+
+			case 3:
+				Reset_Board();
+				return;
+				break;
+
+			default:
+				printf("*** Non-existed item! ***\n");
+				break;
+		}			/* -----  end switch  ----- */
+	}
+}

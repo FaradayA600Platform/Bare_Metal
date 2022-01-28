@@ -1,0 +1,276 @@
+mainmenu "Faraday SoFia Configuration"
+
+comment "Faraday SoFia Configuration ---"
+
+menu "Environment Setting"
+    choice
+        prompt "User Permission"
+		default NORMAL_USER
+        config SUPER_USER
+            bool "Super user"
+        config NORMAL_USER
+            bool "Normal user"
+    endchoice
+    config CCACHE
+        bool "Use ccache"
+		default y
+	config USE_FLIB_PRINTF
+		bool "Use Faraday fLib printf function"		
+		
+endmenu
+
+choice
+	prompt "Faraday Platform Selection"
+	default PLATFORM_A380
+
+    config PLATFORM_A380
+        bool "A380" 
+    config PLATFORM_A500
+        bool "A500"
+	config PLATFORM_A600
+        bool "A600"
+endchoice
+
+choice
+	prompt "CPU Selection"
+	default CPU_FA626TE
+
+config CPU_FA626TE
+    select ARMV5TE
+	bool "FA626TE"
+
+config CPU_CA9
+    select ARMV7A
+	bool "Coretex-A9"
+
+config CPU_CA53
+    select ARMV8
+	bool "Coretex-A53"
+	
+endchoice
+
+config ARMV5TE
+    bool
+
+config ARMV7A
+    bool
+
+config ARMV8
+    bool
+    
+menu "Memory Setting"
+	config STACK_ADDR
+		hex "stack address"
+		default 0x6000000
+#		default 0x4000   if !DEBUG
+#		default 0x800000 if DEBUG
+
+	config TEXT_BASE
+		hex "text address"
+		default 0x00008000
+
+	config MEM_BASE
+		hex "memory base address"
+		default 0x00000000
+
+	config MEM_SIZE
+		hex "memory size"
+		default 0x20000000  # (default 512MB)
+
+
+    choice
+        prompt "Vector mode"
+        default NORMAL_VECTOR
+
+        config NORMAL_VECTOR
+            bool "normal (0x0)"
+
+        config HIGH_VECTOR
+            bool "high vector (0xffff0000)"
+
+        config REDIRECT_VECTOR
+            bool "redirect vector"
+
+        if CPU_CA9
+            config VBAR_REMAP_TEXT_BASE 
+                bool "vbar remap to text base"
+        endif
+        
+    endchoice
+
+	if REDIRECT_VECTOR
+        config REDIRECT_VECTOR_BASE
+                hex "redirect vector base"
+                default 0xa0000000
+	endif
+
+	config MMU
+		bool "mmu"
+		default n
+	if MMU
+		config START_W_MMU
+			bool "start with mmu"
+			default n
+	endif
+
+
+    if CPU_CA9
+#       if !HIGH_VECTOR
+#           config VBAR_REMAP_TEXT_BASE 
+#               bool "vbar remap to text base"
+#       endif
+
+    endif
+
+
+endmenu #memory setting
+
+menu "System Setting"
+
+    config SYS_ICACHE_OFF
+        bool "icache off"
+    config JIFFIES
+        bool "jiffies"
+
+endmenu
+
+
+
+menu "Interrupt Setting"
+    choice
+        prompt "Interrupt Controller"
+        config FTINTC030
+            bool "FTINTC030"
+        config FTINTC020
+            bool "FTINTC020"
+        config FTINTC010
+            bool "FTINTC010"
+        if CPU_CA9
+            config GIC 
+                bool "GIC"
+        endif
+        if CPU_CA53
+            config GIC400 
+                bool "GIC400"    
+        endif                        
+    endchoice
+
+    if !GIC
+        config EXTERNAL_GIC
+            bool "use external GIC"
+        config EXT_GIC_IRQ_N
+            int "internal GIC IRQ number to service external GIC"
+            default 90
+    endif
+
+endmenu
+	
+
+menu "Faraday SOC IP Tests"
+
+config FTTIMER 
+	bool "FTTIMER"
+    default y
+	
+	if FTTIMER
+    config CONFIG_TMR_EXTCLK
+		bool "CONFIG_TMR_EXTCLK"
+    choice
+    prompt "Timer IP:"
+        config FTTMR010
+            bool "FTTMR010"
+        config FTPWMTMR010
+            bool "FTPWMTMR010"
+    endchoice
+    if FTPWMTMR010
+    config FTPWMTMR010_EXTCLK
+		bool "FTPWMTMR Use ext_clk as clock source"	
+    endif
+	endif
+
+config FTAES020
+	bool "FTAES020"
+    if FTAES020
+        config SEMIHOSTING_TEST
+            bool "CONFIG_AES_SEMIHOSTING"
+    endif
+
+config FTDMAC030
+	bool "FTDMAC030"
+if FTDMAC030
+	config FTDMAC030_CHANNEL_COUNT
+		int "Channel count"
+		default 4
+endif
+
+config FTDMAC020
+	bool "FTDMAC020"
+if FTDMAC020
+	config FTDMAC020_CHANNEL_COUNT
+		int "Channel count"
+		default 4
+endif
+
+config FTGPIO010
+	bool "FTGPIO010"
+
+config FTIIC010
+	bool "FTIIC010"
+
+config FTSDC021
+	bool "FTSDC021"
+
+config FTSPI020
+	bool "FTSPI020"
+
+config FTLCD210
+	bool "FTLCD210"
+
+config FTSSP010
+	bool "FTSSP010"
+
+config FTSSP010_I2S
+	bool "FTSSP010 I2S test"	
+
+config FTUART010
+	bool "FTUART010"
+#if FTUART010
+#	config FTUART010_IRDA
+#		bool "FTUART010 IRDA"
+#endif
+config FTGMAC030
+	bool "FTGMAC030"
+	
+config FTWDT011
+    bool "FTWDT011"
+
+config HYPERBUS
+	bool "HYPERBUS"
+
+config NEON_CPAT
+	bool "NEON C Pattern"
+
+config SOTERIA
+	bool "SOTERIA"
+
+config DDR_INTERLEAVE
+	bool "DDR Interleave"
+
+endmenu
+
+menu "user"
+
+config QC
+	bool "QC"
+
+config DHRY
+    bool "dhry"
+
+config COREMARK
+    bool "coremark"
+
+config FREERTOS
+    bool 'FreeRTOS'
+
+source libc/Kconfig
+endmenu

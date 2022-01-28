@@ -1,0 +1,45 @@
+comment "C Library Options ---"
+
+#
+# printf
+#
+config LIBC_PRINTF
+	bool "Support printf() and friends"
+	select CONSOLE
+
+choice
+	prompt "Printf Implementation"
+	default LIBC_PRINTF_MIN
+	depends on LIBC_PRINTF
+
+config LIBC_PRINTF_MIN
+	bool "minimal"
+
+config LIBC_PRINTF_STD
+	bool "standard"
+	
+endchoice
+
+config VFS
+	bool "File System Support"
+	
+config LIBC_PRINTF_FPSUPP
+	bool "Enable floating point support"
+	depends on LIBC_PRINTF
+
+#
+# malloc
+#
+config LIBC_MALLOC
+	bool "Support malloc() and friends"
+
+config LIBC_MALLOC_SIZE
+	int "Heap size for malloc() and friends"
+	default 65536	# 64 KB
+	depends on LIBC_MALLOC
+
+#
+# time
+#
+config LIBC_TIME
+	bool "Support time() and friends"

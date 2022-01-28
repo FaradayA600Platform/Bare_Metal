@@ -1,0 +1,2 @@
+qsort.c:20:6:qsort_r	56	static
+stdlib.h:629:13:qsort	24	static
